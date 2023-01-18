@@ -507,7 +507,7 @@ func (coll *Collection) delete(ctx context.Context, filter interface{}, deleteOn
 // For more information about the command, see https://www.mongodb.com/docs/manual/reference/command/delete/.
 func (coll *Collection) DeleteOne(ctx context.Context, filter interface{},
 	opts ...*options.DeleteOptions) (*DeleteResult, error) {
-
+	filter = GetTenantFilter(ctx, filter)
 	return coll.delete(ctx, filter, true, rrOne, opts...)
 }
 
@@ -523,7 +523,7 @@ func (coll *Collection) DeleteOne(ctx context.Context, filter interface{},
 // For more information about the command, see https://www.mongodb.com/docs/manual/reference/command/delete/.
 func (coll *Collection) DeleteMany(ctx context.Context, filter interface{},
 	opts ...*options.DeleteOptions) (*DeleteResult, error) {
-
+	filter = GetTenantFilter(ctx, filter)
 	return coll.delete(ctx, filter, false, rrMany, opts...)
 }
 
@@ -662,7 +662,7 @@ func (coll *Collection) UpdateOne(ctx context.Context, filter interface{}, updat
 	if ctx == nil {
 		ctx = context.Background()
 	}
-
+	filter = GetTenantFilter(ctx, filter)
 	f, err := transformBsoncoreDocument(coll.registry, filter, true, "filter")
 	if err != nil {
 		return nil, err
@@ -690,7 +690,7 @@ func (coll *Collection) UpdateMany(ctx context.Context, filter interface{}, upda
 	if ctx == nil {
 		ctx = context.Background()
 	}
-
+	filter = GetTenantFilter(ctx, filter)
 	f, err := transformBsoncoreDocument(coll.registry, filter, true, "filter")
 	if err != nil {
 		return nil, err
@@ -718,7 +718,7 @@ func (coll *Collection) ReplaceOne(ctx context.Context, filter interface{},
 	if ctx == nil {
 		ctx = context.Background()
 	}
-
+	filter = GetTenantFilter(ctx, filter)
 	f, err := transformBsoncoreDocument(coll.registry, filter, true, "filter")
 	if err != nil {
 		return nil, err
@@ -940,7 +940,7 @@ func (coll *Collection) CountDocuments(ctx context.Context, filter interface{},
 	if ctx == nil {
 		ctx = context.Background()
 	}
-
+	filter = GetTenantFilter(ctx, filter)
 	countOpts := options.MergeCountOptions(opts...)
 
 	pipelineArr, err := countDocumentsAggregatePipeline(coll.registry, filter, countOpts)
@@ -1090,7 +1090,7 @@ func (coll *Collection) Distinct(ctx context.Context, fieldName string, filter i
 	if ctx == nil {
 		ctx = context.Background()
 	}
-
+	filter = GetTenantFilter(ctx, filter)
 	f, err := transformBsoncoreDocument(coll.registry, filter, true, "filter")
 	if err != nil {
 		return nil, err
@@ -1184,7 +1184,7 @@ func (coll *Collection) Find(ctx context.Context, filter interface{},
 	if ctx == nil {
 		ctx = context.Background()
 	}
-
+	filter = GetTenantFilter(ctx, filter)
 	f, err := transformBsoncoreDocument(coll.registry, filter, true, "filter")
 	if err != nil {
 		return nil, err
@@ -1361,7 +1361,7 @@ func (coll *Collection) FindOne(ctx context.Context, filter interface{},
 	if ctx == nil {
 		ctx = context.Background()
 	}
-
+	filter = GetTenantFilter(ctx, filter)
 	findOpts := make([]*options.FindOptions, 0, len(opts))
 	for _, opt := range opts {
 		if opt == nil {
@@ -1463,7 +1463,7 @@ func (coll *Collection) findAndModify(ctx context.Context, op *operation.FindAnd
 // For more information about the command, see https://www.mongodb.com/docs/manual/reference/command/findAndModify/.
 func (coll *Collection) FindOneAndDelete(ctx context.Context, filter interface{},
 	opts ...*options.FindOneAndDeleteOptions) *SingleResult {
-
+	filter = GetTenantFilter(ctx, filter)
 	f, err := transformBsoncoreDocument(coll.registry, filter, true, "filter")
 	if err != nil {
 		return &SingleResult{err: err}
@@ -1529,7 +1529,7 @@ func (coll *Collection) FindOneAndDelete(ctx context.Context, filter interface{}
 // For more information about the command, see https://www.mongodb.com/docs/manual/reference/command/findAndModify/.
 func (coll *Collection) FindOneAndReplace(ctx context.Context, filter interface{},
 	replacement interface{}, opts ...*options.FindOneAndReplaceOptions) *SingleResult {
-
+	filter = GetTenantFilter(ctx, filter)
 	f, err := transformBsoncoreDocument(coll.registry, filter, true, "filter")
 	if err != nil {
 		return &SingleResult{err: err}
@@ -1617,7 +1617,7 @@ func (coll *Collection) FindOneAndUpdate(ctx context.Context, filter interface{}
 	if ctx == nil {
 		ctx = context.Background()
 	}
-
+	filter = GetTenantFilter(ctx, filter)
 	f, err := transformBsoncoreDocument(coll.registry, filter, true, "filter")
 	if err != nil {
 		return &SingleResult{err: err}
