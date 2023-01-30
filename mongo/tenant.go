@@ -32,7 +32,7 @@ func DeRegisterGetTenantIdHook() {
 	gTenantHookInfo.GetTenantIdHook = nil
 }
 
-func GetTenantFilter(ctx context.Context, filter any) any {
+func GetTenantFilter(ctx context.Context, filter interface{}) interface{} {
 	if gTenantHookInfo.GetTenantFieldHook == nil || gTenantHookInfo.GetTenantIdHook == nil {
 		return filter
 	}
