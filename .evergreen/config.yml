@@ -36,6 +36,8 @@ functions:
       params:
         working_dir: src/go.mongodb.org/mongo-driver
         script: |
+          set -o errexit
+
           # Get the current unique version of this checkout.
           if [ "${is_patch}" = "true" ]; then
              CURRENT_VERSION=$(git describe)-patch-${version_id}
@@ -93,8 +95,7 @@ functions:
           go version
           go env
 
-          # TODO(GODRIVER-2676): use libmongocrypt 1.7.0 once it is released.
-          LIBMONGOCRYPT_TAG="1.7.0-alpha1"
+          LIBMONGOCRYPT_TAG="1.7.0"
           # Install libmongocrypt based on OS.
           if [ "Windows_NT" = "$OS" ]; then
              mkdir -p c:/libmongocrypt/include
@@ -103,11 +104,7 @@ functions:
              mkdir libmongocrypt-all
              cd libmongocrypt-all
              # The following URL is published from the upload-all task in the libmongocrypt Evergreen project.
-             # TODO(GODRIVER-2676): replace this URL once libmongocrypt 1.7.0 is released with the following:
-             # curl https://mciuploads.s3.amazonaws.com/libmongocrypt/all/$LIBMONGOCRYPT_TAG/libmongocrypt-all.tar.gz -o libmongocrypt-all.tar.gz
-             # There is no tag URL for libmongocrypt pre-releases.
-             LIBMONGOCRYPT_COMMIT=2cd2f77ae806a3a4c12750b39b0be92b0ca3b2c1
-             curl https://mciuploads.s3.amazonaws.com/libmongocrypt/all/master/$LIBMONGOCRYPT_COMMIT/libmongocrypt-all.tar.gz -o libmongocrypt-all.tar.gz
+             curl https://mciuploads.s3.amazonaws.com/libmongocrypt/all/$LIBMONGOCRYPT_TAG/libmongocrypt-all.tar.gz -o libmongocrypt-all.tar.gz
              tar -xf libmongocrypt-all.tar.gz
              cd ..
              cp libmongocrypt-all/windows-test/bin/mongocrypt.dll c:/libmongocrypt/bin
@@ -2115,6 +2112,7 @@ axes:
           VERSION: "latest"
 
   # OSes that require >= 3.2 for SSL
+  # TODO(GODRIVER-2754): Update Windows to VS2019 and update Go to 1.19.
   - id: os-ssl-32
     display_name: OS
     values:
@@ -2126,19 +2124,20 @@ axes:
           GCC_PATH: "/cygdrive/c/ProgramData/chocolatey/lib/mingw/tools/install/mingw64/bin"
           GO_DIST: "C:\\golang\\go1.18"
           VENV_BIN_DIR: "Scripts"
-      - id: "ubuntu1604-64-go-1-18"
+      - id: "ubuntu1604-64-go-1-19"
         display_name: "Ubuntu 16.04"
         run_on: ubuntu1604-build
         variables:
-          GO_DIST: "/opt/golang/go1.18"
-      - id: "osx-go-1-18"
+          GO_DIST: "/opt/golang/go1.19"
+      - id: "macos11-go-1-19"
         display_name: "MacOS 11.0"
         run_on: macos-1100
         batchtime: 1440 # Run at most once per 24 hours.
         variables:
-          GO_DIST: "/opt/golang/go1.18"
+          GO_DIST: "/opt/golang/go1.19"
 
   # OSes that require >= 4.0 for SSL
+  # TODO(GODRIVER-2754): Update Windows to VS2019 and update Go to 1.19.
   - id: os-ssl-40
     display_name: OS
     values:
@@ -2150,50 +2149,51 @@ axes:
           GCC_PATH: "/cygdrive/c/ProgramData/chocolatey/lib/mingw/tools/install/mingw64/bin"
           GO_DIST: "C:\\golang\\go1.18"
           VENV_BIN_DIR: "Scripts"
-      - id: "ubuntu1804-64-go-1-18"
+      - id: "ubuntu1804-64-go-1-19"
         display_name: "Ubuntu 18.04"
         run_on: ubuntu1804-build
         variables:
-          GO_DIST: "/opt/golang/go1.18"
-      - id: "osx-go-1-18"
+          GO_DIST: "/opt/golang/go1.19"
+      - id: "macos11-go-1-19"
         display_name: "MacOS 11.0"
         run_on: macos-1100
         batchtime: 1440 # Run at most once per 24 hours.
         variables:
-          GO_DIST: "/opt/golang/go1.18"
+          GO_DIST: "/opt/golang/go1.19"
 
   # OCSP linux tasks need to run against this OS since stapling is disabled on Ubuntu 18.04 (SERVER-51364)
   - id: ocsp-rhel-70
     display_name: OS
     values:
-      - id: "rhel70-go-1-18"
+      - id: "rhel70-go-1-19"
         display_name: "RHEL 7.0"
         run_on: rhel70-build
         variables:
-          GO_DIST: "/opt/golang/go1.18"
+          GO_DIST: "/opt/golang/go1.19"
 
+  # TODO(GODRIVER-2754): Update Windows to VS2019 and update Go to 1.19.
   - id: os-aws-auth
     display_name: OS
     values:
-      - id: "windows-64-vsMulti-small-go-1-18"
+      - id: "windows-64-vs2017-small-go-1-19"
         display_name: "Windows 64-bit"
         run_on:
-          - windows-64-vsMulti-small
+          - windows-64-vs2017-small
         variables:
           GCC_PATH: "/cygdrive/c/ProgramData/chocolatey/lib/mingw/tools/install/mingw64/bin"
           GO_DIST: "C:\\golang\\go1.18"
           SKIP_ECS_AUTH_TEST: true
-      - id: "ubuntu1804-64-go-1-18"
+      - id: "ubuntu1804-64-go-1-19"
         display_name: "Ubuntu 18.04"
         run_on: ubuntu1804-test
         variables:
-          GO_DIST: "/opt/golang/go1.18"
-      - id: "osx-go-1-18"
+          GO_DIST: "/opt/golang/go1.19"
+      - id: "macos11-go-1-19"
         display_name: "MacOS 11.0"
         run_on: macos-1100
         batchtime: 1440 # Run at most once per 24 hours.
         variables:
-          GO_DIST: "/opt/golang/go1.18"
+          GO_DIST: "/opt/golang/go1.19"
           SKIP_ECS_AUTH_TEST: true
           SKIP_EC2_AUTH_TEST: true
 
@@ -2341,7 +2341,7 @@ buildvariants:
     run_on:
       - ubuntu1804-build
     expansions:
-      GO_DIST: "/opt/golang/go1.18"
+      GO_DIST: "/opt/golang/go1.19"
     tasks:
       - name: ".static-analysis"
 
@@ -2350,7 +2350,7 @@ buildvariants:
     run_on:
       - ubuntu1804-build
     expansions:
-      GO_DIST: "/opt/golang/go1.18"
+      GO_DIST: "/opt/golang/go1.19"
     tasks:
       - name: ".performance"
 
@@ -2359,7 +2359,7 @@ buildvariants:
     run_on:
       - ubuntu1804-test
     expansions:
-      GO_DIST: "/opt/golang/go1.18"
+      GO_DIST: "/opt/golang/go1.19"
     tasks:
       - name: ".compile-check"
 
@@ -2368,7 +2368,7 @@ buildvariants:
     run_on:
       - ubuntu1804-build
     expansions:
-      GO_DIST: "/opt/golang/go1.18"
+      GO_DIST: "/opt/golang/go1.19"
     tasks:
       - name: "atlas-test"
 
@@ -2377,7 +2377,7 @@ buildvariants:
     run_on:
       - ubuntu1804-build
     expansions:
-      GO_DIST: "/opt/golang/go1.18"
+      GO_DIST: "/opt/golang/go1.19"
     tasks:
       - name: "test-atlas-data-lake"
 
@@ -2412,7 +2412,7 @@ buildvariants:
       - name: "aws-auth-test"
 
   - matrix_name: "ocsp-test"
-    matrix_spec: { version: ["4.4", "5.0", "6.0", "latest"], ocsp-rhel-70: ["rhel70-go-1-18"] }
+    matrix_spec: { version: ["4.4", "5.0", "6.0", "latest"], ocsp-rhel-70: ["rhel70-go-1-19"] }
     display_name: "OCSP ${version} ${ocsp-rhel-70}"
     batchtime: 20160 # Use a batchtime of 14 days as suggested by the OCSP test README
     tasks:
@@ -2427,7 +2427,7 @@ buildvariants:
       - name: ".ocsp-rsa !.ocsp-staple"
 
   - matrix_name: "ocsp-test-macos"
-    matrix_spec: { version: ["4.4", "5.0", "6.0", "latest"], os-ssl-40: ["osx-go-1-18"] }
+    matrix_spec: { version: ["4.4", "5.0", "6.0", "latest"], os-ssl-40: ["macos11-go-1-19"] }
     display_name: "OCSP ${version} ${os-ssl-40}"
     batchtime: 20160 # Use a batchtime of 14 days as suggested by the OCSP test README
     tasks:
@@ -2435,7 +2435,7 @@ buildvariants:
       - name: ".ocsp-rsa !.ocsp-staple"
 
   - matrix_name: "race-test"
-    matrix_spec: { version: ["latest"], os-ssl-40: ["ubuntu1804-64-go-1-18"] }
+    matrix_spec: { version: ["latest"], os-ssl-40: ["ubuntu1804-64-go-1-19"] }
     display_name: "Race Detector Test"
     tasks:
       - name: ".race"
@@ -2447,32 +2447,32 @@ buildvariants:
       - name: ".versioned-api"
 
   - matrix_name: "kms-tls-test"
-    matrix_spec: { version: ["latest"], os-ssl-40: ["ubuntu1804-64-go-1-18"] }
+    matrix_spec: { version: ["latest"], os-ssl-40: ["ubuntu1804-64-go-1-19"] }
     display_name: "KMS TLS ${os-ssl-40}"
     tasks:
       - name: ".kms-tls"
 
   - matrix_name: "load-balancer-test"
     # The LB software is only available on Ubuntu 18.04, so we don't test on all OSes.
-    matrix_spec: { version: ["5.0", "6.0", "latest", "rapid"], os-ssl-40: ["ubuntu1804-64-go-1-18"] }
+    matrix_spec: { version: ["5.0", "6.0", "latest", "rapid"], os-ssl-40: ["ubuntu1804-64-go-1-19"] }
     display_name: "Load Balancer Support ${version} ${os-ssl-40}"
     tasks:
       - name: ".load-balancer"
 
   - matrix_name: "serverless"
-    matrix_spec: { os-ssl-40: ["ubuntu1804-64-go-1-18"] }
+    matrix_spec: { os-ssl-40: ["ubuntu1804-64-go-1-19"] }
     display_name: "Serverless ${os-ssl-40}"
     tasks:
       - "serverless_task_group"
 
   - matrix_name: "kms-kmip-test"
-    matrix_spec: { version: ["latest"], os-ssl-40: ["ubuntu1804-64-go-1-18"] }
+    matrix_spec: { version: ["latest"], os-ssl-40: ["ubuntu1804-64-go-1-19"] }
     display_name: "KMS KMIP ${os-ssl-40}"
     tasks:
       - name: ".kms-kmip"
 
   - matrix_name: "fuzz-test"
-    matrix_spec: { version: ["5.0"], os-ssl-40: ["ubuntu1804-64-go-1-18"] }
+    matrix_spec: { version: ["5.0"], os-ssl-40: ["ubuntu1804-64-go-1-19"] }
     display_name: "Fuzz ${version} ${os-ssl-40}"
     tasks:
       - name: "test-fuzz"
@@ -2483,7 +2483,7 @@ buildvariants:
     run_on:
       - debian11-small
     expansions:
-      GO_DIST: "/opt/golang/go1.18"
+      GO_DIST: "/opt/golang/go1.19"
     tasks:
       - name: testgcpkms_task_group
         batchtime: 20160 # Use a batchtime of 14 days as suggested by the CSFLE test README
@@ -2494,7 +2494,7 @@ buildvariants:
     run_on:
       - debian11-small
     expansions:
-      GO_DIST: "/opt/golang/go1.18"
+      GO_DIST: "/opt/golang/go1.19"
     tasks:
       - testawskms-task
       - testawskms-fail-task
